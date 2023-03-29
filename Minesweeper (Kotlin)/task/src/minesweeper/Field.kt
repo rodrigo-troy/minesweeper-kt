@@ -44,8 +44,7 @@ class Field(rows: Int, columns: Int, mines: Int) {
 
     fun printField() {
         field.forEach { row ->
-            row.forEach { print("$it") }
-            println()
+            println(row.joinToString(""))
         }
     }
 }
