@@ -1,24 +1,51 @@
 package minesweeper
 
+import kotlin.random.Random
+
 class Field(rows: Int, columns: Int, mines: Int) {
     private val field = Array(rows) { CharArray(columns) { '.' } }
-    private val minePositions = mutableSetOf<Pair<Int, Int>>()
 
     init {
-        repeat(mines) {
-            var (row, column) = generateRandomPosition()
-            while (minePositions.contains(row to column)) {
-                row = (0 until rows).random()
-                column = (0 until columns).random()
+        var minesPlaced = 0
+        while (minesPlaced < mines) {
+            val row = Random.nextInt(rows)
+            val col = Random.nextInt(columns)
+
+            if (isValidMinePlacement(field, row, col)) {
+                field[row][col] = 'X'
+                minesPlaced++
             }
-            minePositions.add(row to column)
-            field[row][column] = 'X'
         }
     }
 
-    private fun generateRandomPosition() = (0 until field.size).random() to (0 until field[0].size).random()
+    private fun isValidMinePlacement(minefield: Array<CharArray>, row: Int, col: Int): Boolean {
+        if (minefield[row][col] == 'X') {
+            return false
+        }
+
+        val rowOffsets = arrayOf(-1, 0, 1)
+        val colOffsets = arrayOf(-1, 0, 1)
+
+        for (rowOffset in rowOffsets) {
+            for (colOffset in colOffsets) {
+                val newRow = row + rowOffset
+                val newCol = col + colOffset
+
+                if (newRow in minefield.indices && newCol in 0 until minefield[newRow].size) {
+                    if (minefield[newRow][newCol] == 'X') {
+                        return false
+                    }
+                }
+            }
+        }
+
+        return true
+    }
 
     fun printField() {
-        println(field.joinToString(separator = " ") { it.joinToString(separator = "") })
+        field.forEach { row ->
+            row.forEach { print("$it") }
+            println()
+        }
     }
 }
