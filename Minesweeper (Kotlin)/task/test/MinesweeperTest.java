@@ -30,81 +30,6 @@ class Grid {
         }
     }
 
-    static List<Grid> parse(String output) throws
-                                           Exception {
-
-        output = output.replaceAll("│",
-                                   "|");
-        output = output.replaceAll("—",
-                                   "-");
-
-        List<Grid> grids = new LinkedList<>();
-        String[] lines = output.split("\n");
-
-        boolean gridStarted = false;
-        List<String> newGrid = new LinkedList<>();
-        for (String line : lines) {
-            line = line.trim();
-            if (line.contains("-|--")) {
-                gridStarted = !gridStarted;
-                if (gridStarted) {
-                    newGrid = new LinkedList<>();
-                } else {
-                    if (newGrid.size() != 9) {
-                        throw new Exception(
-                                "Found grid that contains " + newGrid.size() +
-                                " but grid should contain 9 lines. \n" +
-                                "The tests assume that the grid is " +
-                                "between the lines containing the line \"-│--\"."
-                        );
-                    }
-                    grids.add(
-                            new Grid(newGrid.toArray(new String[0]))
-                    );
-                }
-                continue;
-            }
-            if (gridStarted) {
-
-                char toFind = '|';
-
-                long countBrackets =
-                        line.chars().filter(c -> c == toFind).count();
-
-                if (countBrackets != 2) {
-                    throw new Exception(
-                            "Grid should contain " +
-                            "two '|' symbols, at the beginning " +
-                            "(after row number) " +
-                            "and at the end of the row. \n" +
-                            "Your line: \"" + line + "\"."
-                    );
-                }
-
-                int first = line.indexOf(toFind) + 1;
-                int second = line.indexOf(toFind,
-                                          first);
-
-                int rowSize = second - first;
-
-                if (rowSize != 9) {
-                    throw new Exception(
-                            "Every row of the grid should contain " +
-                            "9 symbols between '|' chars. \nThis line has " +
-                            rowSize + " symbols: \"" + line + "\"."
-                    );
-                }
-
-                String row = line.substring(first,
-                                            second);
-
-                newGrid.add(row);
-            }
-        }
-
-        return grids;
-    }
-
     @Override
     public String toString() {
         String res = "";
@@ -231,6 +156,81 @@ class Grid {
             }
         }
         return diff;
+    }
+
+    static List<Grid> parse(String output) throws
+                                           Exception {
+
+        output = output.replaceAll("│",
+                                   "|");
+        output = output.replaceAll("—",
+                                   "-");
+
+        List<Grid> grids = new LinkedList<>();
+        String[] lines = output.split("\n");
+
+        boolean gridStarted = false;
+        List<String> newGrid = new LinkedList<>();
+        for (String line : lines) {
+            line = line.trim();
+            if (line.contains("-|--")) {
+                gridStarted = !gridStarted;
+                if (gridStarted) {
+                    newGrid = new LinkedList<>();
+                } else {
+                    if (newGrid.size() != 9) {
+                        throw new Exception(
+                                "Found grid that contains " + newGrid.size() +
+                                " but grid should contain 9 lines. \n" +
+                                "The tests assume that the grid is " +
+                                "between the lines containing the line \"-│--\"."
+                        );
+                    }
+                    grids.add(
+                            new Grid(newGrid.toArray(new String[0]))
+                    );
+                }
+                continue;
+            }
+            if (gridStarted) {
+
+                char toFind = '|';
+
+                long countBrackets =
+                        line.chars().filter(c -> c == toFind).count();
+
+                if (countBrackets != 2) {
+                    throw new Exception(
+                            "Grid should contain " +
+                            "two '|' symbols, at the beginning " +
+                            "(after row number) " +
+                            "and at the end of the row. \n" +
+                            "Your line: \"" + line + "\"."
+                    );
+                }
+
+                int first = line.indexOf(toFind) + 1;
+                int second = line.indexOf(toFind,
+                                          first);
+
+                int rowSize = second - first;
+
+                if (rowSize != 9) {
+                    throw new Exception(
+                            "Every row of the grid should contain " +
+                            "9 symbols between '|' chars. \nThis line has " +
+                            rowSize + " symbols: \"" + line + "\"."
+                    );
+                }
+
+                String row = line.substring(first,
+                                            second);
+
+                newGrid.add(row);
+            }
+        }
+
+        return grids;
     }
 
 }
