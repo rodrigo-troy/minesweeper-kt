@@ -55,12 +55,12 @@ class Field(rows: Int, columns: Int, mines: Int) {
     }
 
     fun processUserInput(row: Int, col: Int): UserInputResult {
-        if (field[row][col].isDigit()) {
+        if (field[col][row].isDigit()) {
             return UserInputResult.NUMBER
         }
 
-        markCell(row,
-                 col)
+        markCell(col,
+                 row)
 
         if (checkWinCondition()) {
             return UserInputResult.END_GAME
@@ -69,11 +69,11 @@ class Field(rows: Int, columns: Int, mines: Int) {
         return UserInputResult.CONTINUE
     }
 
-    private fun markCell(row: Int, col: Int) {
-        field[row][col] = when (field[row][col]) {
+    private fun markCell(col: Int, row: Int) {
+        field[col][row] = when (field[col][row]) {
             '.'  -> '*'
             '*'  -> '.'
-            else -> field[row][col]
+            else -> field[col][row]
         }
     }
 
