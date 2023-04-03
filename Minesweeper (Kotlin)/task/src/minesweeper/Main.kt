@@ -6,4 +6,6 @@ fun main() {
 
     val field = Field(9, 9, mines)
     field.printField()
+
+
 }
