@@ -3,7 +3,7 @@ package minesweeper
 /**
  *
  * The game starts with asking the player for the number of mines.
- **
+ *
  * Ask the player for their next move with the message “Set/unset mine marks or claim a cell as free:”, treat the player's move according to the rules, and print the new minefield state.
  *
  * Ask for the player's next move until the player wins or steps on a mine.
@@ -12,7 +12,6 @@ package minesweeper
  *
  * If the player explores a mine, print the field in its current state, with mines shown as X symbols. After that, output the message “You stepped on a mine and failed!”.
  *
- * Generate mines like in the original game: the first cell explored with the free command cannot be a mine; it should always be empty.
  */
 fun main() {
     println("How many mines do you want on the field?")
@@ -44,6 +43,7 @@ fun main() {
 
             UserInputResult.STEPPED_ON_MINE -> {
                 println("You stepped on a mine and failed!")
+                field.printField()
                 return
             }
 

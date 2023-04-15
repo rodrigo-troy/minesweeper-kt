@@ -14,11 +14,13 @@ class Cell(val x: Int, val y: Int, private var state: CellState, var isMine: Boo
         minesAround++
     }
 
+    fun getState() = state
+
     fun hasMinesAround() = minesAround > 0
 
     fun wasExplored() = state == CellState.EXPLORED_WITH_MINE || state == CellState.EXPLORED_WITHOUT_MINE
 
-    private fun isUnexplored() = state == CellState.UNEXPLORED
+    fun isUnexplored() = state == CellState.UNEXPLORED
 
     fun isNotMine() = !isMine
 
@@ -46,5 +48,9 @@ class Cell(val x: Int, val y: Int, private var state: CellState, var isMine: Boo
             CellState.EXPLORED_WITHOUT_MINE -> if (minesAround == 0) "/" else minesAround.toString()
             else -> "."
         }
+    }
+
+    fun printCoordinates(): String {
+        return "Cell(x=$x, y=$y, isMine=$isMine, state=$state, minesAround=$minesAround) "
     }
 }

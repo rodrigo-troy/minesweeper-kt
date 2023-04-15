@@ -15,16 +15,6 @@ enum FirstPressStatus {
     NOT_PRESSED_FREE, PRESSED_FREE, VERIFIED_OK
 }
 
-class Coords {
-    int x;
-    int y;
-
-    Coords(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
 enum Action {
     NONE, MINE, FREE
 }
@@ -32,6 +22,7 @@ enum Action {
 class Grid {
 
     char[][] rows;
+
     Grid(String[] rows) throws Exception {
         this.rows = new char[rows.length][];
         for (int i = 0; i < rows.length; i++) {
@@ -289,6 +280,16 @@ class Grid {
         rows[y - 1][x - 1] = c;
     }
 
+}
+
+class Coords {
+    int x;
+    int y;
+
+    Coords(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
 }
 
 class State {
