@@ -15,6 +15,16 @@ enum FirstPressStatus {
     NOT_PRESSED_FREE, PRESSED_FREE, VERIFIED_OK
 }
 
+class Coords {
+    int x;
+    int y;
+
+    Coords(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
 enum Action {
     NONE, MINE, FREE
 }
@@ -22,7 +32,6 @@ enum Action {
 class Grid {
 
     char[][] rows;
-
     Grid(String[] rows) throws Exception {
         this.rows = new char[rows.length][];
         for (int i = 0; i < rows.length; i++) {
@@ -60,6 +69,53 @@ class Grid {
             }
         }
         return sum;
+    }
+
+    int countAround(int x, int y, char c) {
+        int[] around = new int[]{-1, 0, 1};
+        int count = 0;
+        for (int dx : around) {
+            for (int dy : around) {
+
+                int newX = x + dx;
+                int newY = y + dy;
+
+                if (1 <= newX && newX <= 9 &&
+                        1 <= newY && newY <= 9) {
+                    if (get(newX, newY) == c) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    int distanceToCenter(int x, int y) {
+        return abs(x - 5) + abs(y - 5);
+    }
+
+    void replaceAround(int x, int y, char from, char to) {
+        int[] around = new int[]{-1, 0, 1};
+        int count = 0;
+        for (int dx : around) {
+            for (int dy : around) {
+
+                int newX = x + dx;
+                int newY = y + dy;
+
+                if (1 <= newX && newX <= 9 &&
+                        1 <= newY && newY <= 9) {
+                    if (get(newX, newY) == from) {
+                        set(newX, newY, to);
+                    }
+                }
+            }
+        }
+    }
+
+    char get(int x, int y) {
+        return rows[y - 1][x - 1];
     }
 
     static List<Grid> parse(String output) throws Exception {
@@ -132,53 +188,6 @@ class Grid {
         return grids;
     }
 
-    int countAround(int x, int y, char c) {
-        int[] around = new int[]{-1, 0, 1};
-        int count = 0;
-        for (int dx : around) {
-            for (int dy : around) {
-
-                int newX = x + dx;
-                int newY = y + dy;
-
-                if (1 <= newX && newX <= 9 &&
-                        1 <= newY && newY <= 9) {
-                    if (get(newX, newY) == c) {
-                        count++;
-                    }
-                }
-            }
-        }
-        return count;
-    }
-
-    int distanceToCenter(int x, int y) {
-        return abs(x - 5) + abs(y - 5);
-    }
-
-    void replaceAround(int x, int y, char from, char to) {
-        int[] around = new int[]{-1, 0, 1};
-        int count = 0;
-        for (int dx : around) {
-            for (int dy : around) {
-
-                int newX = x + dx;
-                int newY = y + dy;
-
-                if (1 <= newX && newX <= 9 &&
-                        1 <= newY && newY <= 9) {
-                    if (get(newX, newY) == from) {
-                        set(newX, newY, to);
-                    }
-                }
-            }
-        }
-    }
-
-    char get(int x, int y) {
-        return rows[y - 1][x - 1];
-    }
-
     Grid copy() {
         String[] rows = new String[this.rows.length];
         for (int i = 0; i < this.rows.length; i++) {
@@ -189,10 +198,6 @@ class Grid {
         } catch (Exception ex) {
             return null;
         }
-    }
-
-    void set(int x, int y, char c) {
-        rows[y - 1][x - 1] = c;
     }
 
     int differences(Grid other) {
@@ -280,16 +285,10 @@ class Grid {
         checkField(true);
     }
 
-}
-
-class Coords {
-    int x;
-    int y;
-
-    Coords(int x, int y) {
-        this.x = x;
-        this.y = y;
+    void set(int x, int y, char c) {
+        rows[y - 1][x - 1] = c;
     }
+
 }
 
 class State {

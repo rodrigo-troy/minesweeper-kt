@@ -1,8 +1,5 @@
 package minesweeper
 
-import kotlin.math.abs
-import kotlin.random.Random
-
 /**
  * Represents a field of cells with mines.
  *
@@ -11,39 +8,37 @@ import kotlin.random.Random
  * @param mines the number of mines to place in the field.
  */
 class Field(rows: Int, columns: Int, mines: Int) {
-    private val field = Array(rows) { CharArray(columns) { '.' } }
-    private val minePositions = mutableListOf<Pair<Int, Int>>()
+    private val field = Array(rows) { row ->
+        Array(columns) { col ->
+            Cell(col, row, CellState.UNEXPLORED, false)
+        }
+    }
 
     /**
      * Initializes the field by placing mines randomly and calculating the numbers of mines around each cell.
      */
     init {
-        var minesPlaced = 0
-        while (minesPlaced < mines) {
-            val row = Random.nextInt(rows)
-            val col = Random.nextInt(columns)
+        placeMines(mines)
+        calculateMinesAround()
+    }
 
-            if (field[row][col] != 'X') {
-                //field[row][col] = 'X'
-                minePositions.add(
-                    Pair(
-                        row,
-                        col
-                    )
-                )
-                minesPlaced++
-            }
-        }
+    private fun calculateMinesAround() {
+        for (row in field) {
+            for (cell in row) {
+                if (cell.isMine) {
+                    for (i in -1..1) {
+                        for (j in -1..1) {
+                            if (i == 0 && j == 0) {
+                                continue
+                            }
 
-        (0 until rows).forEach { row ->
-            (0 until columns).forEach { col ->
-                if (field[row][col] == '.') {
-                    val minesAround = countMinesAround(
-                        row,
-                        col
-                    )
-                    if (minesAround > 0) {
-                        field[row][col] = minesAround.toString().first()
+                            val currentRow = cell.y + i
+                            val currentCol = cell.x + j
+
+                            if (currentRow in field.indices && currentCol in row.indices) {
+                                field[currentRow][currentCol].incrementMinesAround()
+                            }
+                        }
                     }
                 }
             }
@@ -51,80 +46,127 @@ class Field(rows: Int, columns: Int, mines: Int) {
     }
 
     /**
-     * Counts the number of mines around a given cell.
+     * Places mines randomly in the field.
      *
-     * @param row the row index of the cell.
-     * @param col the column index of the cell.
-     * @return the number of mines around the cell.
+     * @param mines the number of mines to place.
      */
-    private fun countMinesAround(row: Int, col: Int): Int {
-        return minePositions.count { (mineRow, mineCol) ->
-            val rowDiff = abs(mineRow - row)
-            val colDiff = abs(mineCol - col)
-            rowDiff in 0..1 && colDiff in 0..1 && (rowDiff != 0 || colDiff != 0)
+    private fun placeMines(mines: Int) {
+        var minesToPlace = mines
+
+        while (minesToPlace > 0) {
+            val row = (field.indices).random()
+            val col = (0.until(field[row].size)).random()
+
+            if (!field[row][col].isMine) {
+                field[row][col].isMine = true
+                minesToPlace--
+            }
         }
     }
 
     /**
      * Prints the current state of the field.
+     * Use the following symbols to represent each cell’s state:
+     *
+     * . as unexplored cells
+     *
+     * / as explored free cells without mines around it
+     *
+     * Numbers from 1 to 8 as explored free cells with 1 to 8 mines around them, respectively
+     *
+     * X as mines
+     *
+     * * as unexplored marked cells
+     *
+     * The first line of the field should contain the column numbers and the second line should contain the row numbers.
+     * The first line should start with a space and the second line should start with a pipe.
      */
     fun printField() {
         println(" │123456789│")
         println("—│—————————│")
 
-        field.forEachIndexed { rowIndex, row ->
-            val rowString = row.joinToString("")
-            println("${rowIndex + 1}│$rowString│")
+        for (row in field) {
+            print("${field.indexOf(row) + 1}|")
+
+            for (cell in row) {
+                print(cell)
+            }
+
+            println("|")
         }
+
 
         println("—│—————————│")
     }
 
     /**
      * Processes user input for a given cell and returns the result of the input.
-     *
-     * @param row the row index of the cell.
-     * @param col the column index of the cell.
-     * @return the result of the user input.
+     * If the player explores a mine, print the field in its current state, with mines shown as X symbols. After that, output the message “You stepped on a mine and failed!”.
+     * If the user wants to explore a cell, the cell should be explored if it is unexplored or marked.
      */
-    fun processUserInput(row: Int, col: Int): UserInputResult {
-        if (field[col][row].isDigit()) {
-            return UserInputResult.NUMBER
-        }
+    fun processUserInput(x: Int, y: Int, userInput: UserInput): UserInputResult {
+        val cell = field[y - 1][x - 1]
 
-        markCell(
-            col,
-            row
-        )
+        return when (userInput) {
+            UserInput.MINE -> {
+                cell.swithMarked()
+                UserInputResult.CONTINUE
+            }
 
-        if (checkWinCondition()) {
-            return UserInputResult.END_GAME
-        }
+            UserInput.FREE -> {
+                if (cell.isMine) {
+                    cell.setExploredWithMine()
+                    UserInputResult.STEPPED_ON_MINE
+                } else {
+                    this.exploreCell(cell)
+                    UserInputResult.CONTINUE
+                }
+            }
 
-        return UserInputResult.CONTINUE
-    }
-
-    /**
-     * Toggles the mark on a given cell.
-     *
-     * @param col the column index of the cell.
-     * @param row the row index of the cell.
-     */
-    private fun markCell(col: Int, row: Int) {
-        field[col][row] = when (field[col][row]) {
-            '.' -> '*'
-            '*' -> '.'
-            else -> field[col][row]
+            else -> {
+                UserInputResult.CONTINUE
+            }
         }
     }
 
     /**
-     * Checks if the win condition has been met.
-     *
-     * @return true if all mines are marked and all other cells are uncovered, false otherwise.
+     * Explores a given cell and its neighbors recursively.
+     * If the cell has no mines around it, it should explore all of its neighbors.
+     * If a cell has mines around it, it should only be explored.
+     * If a cell is already explored, it should not be explored again.
      */
-    private fun checkWinCondition(): Boolean {
-        return minePositions.all { (row, col) -> field[row][col] == '*' } &&
-                field.sumBy { row -> row.count { it == '*' } } == minePositions.size
+    private fun exploreCell(cell: Cell) {
+        if (cell.isNotMine()) {
+            cell.setExploredWithoutMine()
+
+            if (cell.hasMinesAround()) {
+                return
+            } else {
+                for (i in -1..1) {
+                    for (j in -1..1) {
+                        if (i == 0 && j == 0) {
+                            continue
+                        }
+
+                        val currentRow = cell.y + i
+                        val currentCol = cell.x + j
+
+                        if (currentRow in field.indices && currentCol in field[currentRow].indices) {
+                            val currentCell = field[currentRow][currentCol]
+
+                            if (currentCell.wasExplored()) {
+                                return
+                            }
+
+                            exploreCell(currentCell)
+                        }
+                    }
+                }
+            }
+        } else {
+            cell.setExploredWithoutMine()
+            return
+        }
     }
+
 }

@@ -8,7 +8,7 @@ $ Project: minesweeper-kt
  * Time: 13:07
  */
 enum class UserInputResult {
-    NUMBER,
+    WIN,
     CONTINUE,
-    END_GAME
+    STEPPED_ON_MINE
 }
